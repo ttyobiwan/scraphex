@@ -1,9 +1,0 @@
-{application,scraphex,
-             [{modules,['Elixir.Scraphex','Elixir.Scraphex.Application',
-                        'Elixir.Scraphex.Repo']},
-              {optional_applications,[]},
-              {applications,[kernel,stdlib,elixir,logger,ecto_sql,postgrex]},
-              {description,"scraphex"},
-              {registered,[]},
-              {vsn,"0.1.0"},
-              {mod,{'Elixir.Scraphex.Application',[]}}]}.
