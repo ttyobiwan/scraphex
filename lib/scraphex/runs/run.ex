@@ -3,9 +3,12 @@ defmodule Scraphex.Runs.Run do
   import Ecto.Changeset
 
   @primary_key {:id, :binary_id, autogenerate: true}
-  schema "scrape_runs" do
+  schema "scrap_runs" do
     field :url, :string
     field :status, Ecto.Enum, values: [:created, :started, :completed], default: :created
+
+    field :started_at, :utc_datetime
+    field :completed_at, :utc_datetime
 
     timestamps(type: :utc_datetime)
   end
@@ -16,7 +19,9 @@ defmodule Scraphex.Runs.Run do
     |> validate_required([:url])
   end
 
-  def status_changeset(run, status) do
-    change(run, %{status: status})
+  def status_changeset(run, attrs) do
+    run
+    |> cast(attrs, [:status, :started_at, :completed_at])
+    |> validate_required([:status])
   end
 end

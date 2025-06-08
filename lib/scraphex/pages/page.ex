@@ -4,7 +4,7 @@ defmodule Scraphex.Pages.Page do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type Ecto.UUID
-  schema "scrape_pages" do
+  schema "scrap_pages" do
     field :url, :string
     field :title, :string
 

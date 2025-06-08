@@ -1,13 +1,47 @@
 defmodule Scraphex.Scrapper do
-  def scrap(_url) do
-    "html content"
+  @doc """
+  Scraps a page and parses it into document.
+  """
+  def scrap(url) do
+    # todo: retry
+    case Req.get(url, headers: [{"user-agent", "Mozilla/5.0 (compatible; Scraphex/1.0)"}]) do
+      {:ok, %{status: 200, body: body}} ->
+        {:ok, Floki.parse_document!(body)}
+
+      {:ok, %{status: 404}} ->
+        {:error, :not_found}
+
+      {:ok, %{status: status}} ->
+        {:error, {:http_error, status}}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
-  def get_title(_html) do
-    "some title"
+  @doc """
+  Gets a title from a parsed doc.
+  """
+  def get_title(doc) do
+    doc
+    |> Floki.find("title")
+    |> Floki.text()
   end
 
-  def get_links(_html) do
-    ["default.com"]
+  @doc """
+  Get all relative links from the doc.
+  """
+  def get_relative_links(doc) do
+    doc
+    |> Floki.find("a[href]")
+    |> Floki.attribute("href")
+    |> Enum.filter(fn href -> is_relative_link(href) end)
+  end
+
+  defp is_relative_link(href) do
+    case URI.parse(href) do
+      %URI{scheme: nil, host: nil} when href not in ["", "#"] -> true
+      _ -> false
+    end
   end
 end
