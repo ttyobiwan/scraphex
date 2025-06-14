@@ -1,21 +1,44 @@
 # Scraphex
 
-**TODO: Add description**
+Elixir web scrapping app, with graph display of scrapped pages.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `scraphex` to your list of dependencies in `mix.exs`:
+Start Postgres using Docker Compose:
 
-```elixir
-def deps do
-  [
-    {:scraphex, "~> 0.1.0"}
-  ]
-end
+```bash
+docker-compose up -d
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/scraphex>.
+Install dependencies and setup database:
 
+```bash
+mix setup
+```
+
+You should be good to go at this point.
+
+Run Bandit server:
+
+```bash
+mix server
+```
+
+Run iex session:
+
+```bash
+iex -S mix
+```
+
+## TODOs
+
+- [ ] Implement scraping scheduler
+- [ ] Better requests
+- [ ] Move link handling to a separate module
+- [ ] Add more usage of with
+- [ ] Add tests
+- [ ] Fix link building
+- [ ] Fix code structure
+- [ ] Add better error handling
+- [ ] Implement web UI for starting runs
+- [ ] Implement web UI for displaying run graphs
