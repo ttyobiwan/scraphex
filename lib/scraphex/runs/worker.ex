@@ -6,14 +6,40 @@ defmodule Scraphex.Runs.Worker do
   alias Scraphex.Runs.Run
   require Logger
 
+  use GenServer
+
+  # --- Client ---
+
+  @doc """
+  Schedules start of a run.
+  """
   def start_run(run = %Run{}) do
+    GenServer.cast(__MODULE__, {:start, run})
+  end
+
+  # --- Server ---
+
+  def start_link(_) do
+    Logger.info("Starting scrapper worker")
+    GenServer.start_link(__MODULE__, nil, name: __MODULE__)
+  end
+
+  def init(_) do
+    {:ok, nil}
+  end
+
+  def handle_cast({:start, run = %Run{}}, state) do
     Logger.info("Starting run: run_id=#{run.id}")
 
     run
     |> Runs.mark_run_as_started!()
     |> tap(fn run -> process_page(run, run.url) end)
     |> Runs.mark_run_as_completed!()
+
+    {:noreply, state}
   end
+
+  # --- Internal ---
 
   defp process_page(run = %Run{}, current_page_url, previous_page_id \\ nil) do
     Logger.info("Processing page: run_id=#{run.id} page_url=#{current_page_url}")
