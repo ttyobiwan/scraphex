@@ -14,21 +14,18 @@ defmodule Scraphex.Pages do
   end
 
   @doc """
-  Creates a new page link.
+  Create links between page and linked pages.
   """
-  def create_link!(attrs \\ %{}) do
-    %PageLink{}
-    |> PageLink.changeset(attrs)
-    |> Repo.insert!()
+  def create_links(page, linked_pages) do
+    linked_pages
+    |> Enum.map(fn lpage ->
+      PageLink.changeset(%PageLink{}, %{page_id: page.id, linked_page_id: lpage.id})
+    end)
+    |> Enum.map(& &1.changes)
+    |> tap(fn changesets -> Repo.insert_all(PageLink, changesets) end)
   end
 
-  @doc """
-  Gets page by url and run id.
-  """
-  def get_page_by_url_and_run(url, run_id) do
-    Repo.one(
-      from p in Page,
-        where: p.url == ^url and p.run_id == ^run_id
-    )
+  def get_pages_by_urls_and_run(urls, run) do
+    Repo.all(from(p in Page, where: p.url in ^urls and p.run_id == ^run.id, select: p.id))
   end
 end

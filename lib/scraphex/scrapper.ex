@@ -1,9 +1,10 @@
 defmodule Scraphex.Scrapper do
+  alias Scraphex.Urls
+
   @doc """
   Scraps a page and parses it into document.
   """
   def scrap(url) do
-    # todo: retry
     case Req.get(url, headers: [{"user-agent", "Mozilla/5.0 (compatible; Scraphex/1.0)"}]) do
       {:ok, %{status: 200, body: body}} ->
         {:ok, Floki.parse_document!(body)}
@@ -35,13 +36,6 @@ defmodule Scraphex.Scrapper do
     doc
     |> Floki.find("a[href]")
     |> Floki.attribute("href")
-    |> Enum.filter(fn href -> is_relative_link(href) end)
-  end
-
-  defp is_relative_link(href) do
-    case URI.parse(href) do
-      %URI{scheme: nil, host: nil} when href not in ["", "#"] -> true
-      _ -> false
-    end
+    |> Enum.filter(fn href -> Urls.relative_link?(href) end)
   end
 end

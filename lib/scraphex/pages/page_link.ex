@@ -12,5 +12,6 @@ defmodule Scraphex.Pages.PageLink do
     page
     |> cast(attrs, [:page_id, :linked_page_id])
     |> validate_required([:page_id, :linked_page_id])
+    |> unique_constraint([:page_id, :linked_page_id])
   end
 end

@@ -1,5 +1,5 @@
 defmodule Scraphex.Runs do
-  alias Scraphex.Runs.Worker
+  alias Scraphex.Runs.Scheduler
   alias Scraphex.Runs.Run
   alias Scraphex.Repo
 
@@ -7,8 +7,9 @@ defmodule Scraphex.Runs do
   Creates a new run object and schedules the start of the scraping process.
   """
   def start_run(url) do
-    run = create_run!(%{url: url})
-    Worker.start_run(run)
+    %{url: url}
+    |> create_run!()
+    |> Scheduler.start_run()
   end
 
   @doc """

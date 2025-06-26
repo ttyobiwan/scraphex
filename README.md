@@ -32,13 +32,8 @@ iex -S mix
 
 ## TODOs
 
-- [ ] Implement scraping scheduler
 - [ ] Better requests
-- [ ] Move link handling to a separate module
-- [ ] Add more usage of with
 - [ ] Add tests
-- [ ] Fix link building
-- [ ] Fix code structure
-- [ ] Add better error handling
 - [ ] Implement web UI for starting runs
 - [ ] Implement web UI for displaying run graphs
+- [ ] Failed status

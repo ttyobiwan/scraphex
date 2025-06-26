@@ -24,6 +24,7 @@ defmodule Scraphex.MixProject do
   defp deps do
     [
       {:ecto_sql, "~> 3.12"},
+      {:ecto_sqlite3, "~> 0.19"},
       {:postgrex, ">= 0.0.0"},
       {:req, "~> 0.5.0"},
       {:floki, "~> 0.37.0"}

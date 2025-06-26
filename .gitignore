@@ -21,3 +21,8 @@ scraphex-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# SQLite files
+scraphex_dev
+scraphex_dev-shm
+scraphex_dev-wal

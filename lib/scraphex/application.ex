@@ -9,7 +9,8 @@ defmodule Scraphex.Application do
   def start(_type, _args) do
     children = [
       Scraphex.Repo,
-      Scraphex.Runs.Worker
+      Scraphex.Runs.Worker,
+      Scraphex.Runs.Scheduler
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
