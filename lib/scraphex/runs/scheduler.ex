@@ -1,4 +1,6 @@
 defmodule Scraphex.Runs.Scheduler do
+  alias Scraphex.Pages.Page
+  alias Scraphex.Runs.State
   alias Scraphex.Runs.Worker
   alias Scraphex.Urls
   alias Scraphex.Runs
@@ -6,6 +8,9 @@ defmodule Scraphex.Runs.Scheduler do
   require Logger
 
   use GenServer
+
+  @max_depth 30
+  @max_pages 100
 
   @doc """
   Schedules start of a run.
@@ -35,7 +40,7 @@ defmodule Scraphex.Runs.Scheduler do
   defp process_run(run = %Run{}) do
     Logger.info("Starting to process run: #{run.id}")
 
-    state = %{
+    state = %State{
       run: run,
       base_url: Urls.base_url(run.url),
       visited: MapSet.new(),
@@ -44,66 +49,113 @@ defmodule Scraphex.Runs.Scheduler do
     }
 
     # Process the root page
-    {:ok, page, links} = Worker.process_page(Urls.build_absolute_url(state.base_url, "/"), run.id)
+    root_url = Urls.build_absolute_url(state.base_url, "/")
+    Logger.info("Processing root page: #{root_url}")
 
-    final_state =
-      state
-      |> update_state(["/"])
-      |> process_links(page, links)
+    case Worker.process_page(root_url, run.id) do
+      {:ok, page, links} ->
+        Logger.info("Successfully processed root page, found #{length(links)} links")
 
-    Logger.info("Done processing all links: final_state=#{inspect(final_state)}")
+        final_state =
+          state
+          |> update_state(["/"])
+          |> process_links(page, links)
+
+        Logger.info(
+          "Done processing all links: total_processed=#{final_state.total_processed}, final_depth=#{final_state.depth}"
+        )
+
+      {:error, reason} ->
+        Logger.error("Failed to process root page: #{inspect(reason)}")
+        Logger.info("Stopping crawl due to root page failure")
+    end
 
     run
   end
 
-  defp process_links(state, page, []) do
+  defp process_links(state = %State{}, page = %Page{}, []) do
     Logger.info("No more links to process: page_url=#{page.url}")
     state
   end
 
-  defp process_links(state, page, links) do
-    Logger.info("Processing links: page_url=#{page.url} links=#{links}")
+  defp process_links(state = %State{}, page = %Page{}, links) do
+    Logger.info(
+      "Processing links: page_url=#{page.url} links=#{length(links)} depth=#{state.depth} total_processed=#{state.total_processed}"
+    )
 
-    # todo: check depth
-    # todo: check total processed
-    # todo: seems like we are not connecting "/" correctly because visited often have things like "/r/capper" and "/r/capper/"
+    # Check limits
+    cond do
+      state.depth >= @max_depth ->
+        Logger.info("Max depth reached (#{@max_depth}), stopping crawl")
+        state
+
+      state.total_processed >= @max_pages ->
+        Logger.info("Max pages reached (#{@max_pages}), stopping crawl")
+        state
+
+      true ->
+        do_process_links(state, page, prepare_links(state, page, links))
+    end
+  end
+
+  defp prepare_links(state = %State{}, page = %Page{}, links) do
+    # Normalize and deduplicate links
+    normalized_links =
+      links
+      |> Enum.map(&Urls.normalize_path/1)
+      |> Enum.uniq()
 
     # For each already visited link, just create a connection
-    links
-    |> Enum.uniq()
-    |> Enum.filter(fn link -> MapSet.member?(state.visited, link) end)
-    |> tap(fn links -> Worker.save_link_connections(page, links, state.run) end)
-
-    # Deduplicate and remove already visited links
-    links =
-      links
-      |> Enum.uniq()
-      |> Enum.reject(fn link -> MapSet.member?(state.visited, link) end)
-
-    # todo: what if none left? maybe we could return state early?
-
-    # Then, process them all, and save connections
-    results =
-      links
-      |> Enum.map(fn link -> Urls.build_absolute_url(state.base_url, link) end)
-      |> Worker.process_many_pages(state.run.id)
-
-    pages = Enum.map(results, fn {page, _links} -> page end)
-
-    Worker.save_page_connections(page, pages)
-
-    # Update state
-    state = update_state(state, links)
-
-    # Process each result and thread state through the recursive calls
-    Enum.reduce(results, state, fn {page, links}, acc_state ->
-      process_links(acc_state, page, links)
+    normalized_links
+    |> Enum.filter(fn link ->
+      MapSet.member?(state.visited, link)
     end)
+    |> case do
+      [] -> nil
+      visited_links -> Worker.save_link_connections(page, visited_links, state.run)
+    end
 
+    # Remove already visited links
+    new_links =
+      Enum.reject(normalized_links, fn link ->
+        MapSet.member?(state.visited, link)
+      end)
+
+    Enum.take(new_links, @max_pages - state.total_processed)
+  end
+
+  defp do_process_links(state = %State{}, page = %Page{}, []) do
+    # If no new links or limits reached, return current state
+    Logger.info("No new links to process for page: #{page.url}")
     state
   end
 
-  defp update_state(state, links) do
+  defp do_process_links(state = %State{}, page = %Page{}, links) do
+    Logger.info("Processing #{length(links)} new links from page: #{page.url}")
+
+    absolute_urls =
+      Enum.map(links, fn link ->
+        Urls.build_absolute_url(state.base_url, link)
+      end)
+
+    results = Worker.process_many_pages(absolute_urls, state.run.id)
+
+    pages = Enum.map(results, fn {page, _links} -> page end)
+
+    # Create connections from current page to new pages
+    unless Enum.empty?(pages) do
+      Worker.save_page_connections(page, pages)
+    end
+
+    updated_state = update_state(state, links)
+
+    # Process each result recursively and accumulate state
+    Enum.reduce(results, updated_state, fn {new_page, new_links}, acc_state ->
+      process_links(acc_state, new_page, prepare_links(state, page, new_links))
+    end)
+  end
+
+  defp update_state(state = %State{}, links) do
     state
     |> Map.put(:visited, Enum.into(links, state.visited))
     |> Map.put(:depth, state.depth + 1)

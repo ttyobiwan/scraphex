@@ -32,8 +32,6 @@ iex -S mix
 
 ## TODOs
 
-- [ ] Better requests
 - [ ] Add tests
 - [ ] Implement web UI for starting runs
 - [ ] Implement web UI for displaying run graphs
-- [ ] Failed status

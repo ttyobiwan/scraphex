@@ -37,5 +37,7 @@ defmodule Scraphex.Scrapper do
     |> Floki.find("a[href]")
     |> Floki.attribute("href")
     |> Enum.filter(fn href -> Urls.relative_link?(href) end)
+    |> Enum.map(&Urls.normalize_path/1)
+    |> Enum.uniq()
   end
 end

@@ -37,10 +37,30 @@ defmodule Scraphex.Runs.Worker do
   def process_many_pages(urls, run_id) do
     Logger.info("Starting to process multiple urls: #{urls}")
 
-    # todo: handle errors
-    __MODULE__
-    |> Task.Supervisor.async_stream(urls, fn url -> process_page(url, run_id) end)
-    |> Enum.map(fn {:ok, {:ok, page, links}} -> {page, links} end)
+    results =
+      __MODULE__
+      |> Task.Supervisor.async_stream(urls, fn url -> process_page(url, run_id) end)
+      |> Enum.reduce([], fn
+        {:ok, {:ok, page, links}}, acc ->
+          [{:ok, page, links} | acc]
+
+        {:ok, {:error, reason}}, acc ->
+          Logger.error("Failed to process page: #{inspect(reason)}")
+          [{:error, reason} | acc]
+
+        {:exit, reason}, acc ->
+          Logger.error("Task exited with reason: #{inspect(reason)}")
+          [{:error, {:task_exit, reason}} | acc]
+      end)
+      |> Enum.reverse()
+
+    {successes, errors} = Enum.split_with(results, &match?({:ok, _, _}, &1))
+
+    Logger.info(
+      "Processed #{length(urls)} URLs: #{length(successes)} successes, #{length(errors)} errors"
+    )
+
+    Enum.map(successes, fn {:ok, page, links} -> {page, links} end)
   end
 
   @doc """

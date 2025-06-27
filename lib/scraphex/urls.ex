@@ -8,13 +8,24 @@ defmodule Scraphex.Urls do
   end
 
   @doc """
-  Get a clean link from a given URL.
+  Normalize a path by ensuring trailing slash is present.
+  """
+  def normalize_path(path) when is_binary(path) do
+    case String.trim_trailing(path, "/") do
+      "" -> "/"
+      normalized -> normalized <> "/"
+    end
+  end
+
+  @doc """
+  Get a clean and normalized link from a given URL.
   """
   def clean_link(href) do
     href
     |> URI.parse()
     |> Map.put(:query, nil)
     |> Map.put(:fragment, nil)
+    |> tap(fn uri -> Map.put(uri, :path, normalize_path(uri.path || "/")) end)
     |> URI.to_string()
   end
 
