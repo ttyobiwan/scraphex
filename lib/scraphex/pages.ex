@@ -18,14 +18,14 @@ defmodule Scraphex.Pages do
   """
   def create_links(page, linked_pages) do
     linked_pages
-    |> Enum.map(fn lpage ->
-      PageLink.changeset(%PageLink{}, %{page_id: page.id, linked_page_id: lpage.id})
-    end)
-    |> Enum.map(& &1.changes)
+    |> Enum.map(fn lpage -> %{page_id: page.id, linked_page_id: lpage.id} end)
     |> tap(fn changesets -> Repo.insert_all(PageLink, changesets) end)
   end
 
-  def get_pages_by_urls_and_run(urls, run) do
-    Repo.all(from(p in Page, where: p.url in ^urls and p.run_id == ^run.id, select: p.id))
+  @doc """
+  Get pages by the list of urls and run id.
+  """
+  def get_pages_by_urls_and_run(urls, run_id) do
+    Repo.all(from(p in Page, where: p.url in ^urls and p.run_id == ^run_id, select: p.id))
   end
 end

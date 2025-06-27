@@ -4,8 +4,12 @@ defmodule Scraphex.Scrapper do
   @doc """
   Scraps a page and parses it into document.
   """
-  def scrap(url) do
-    case Req.get(url, headers: [{"user-agent", "Mozilla/5.0 (compatible; Scraphex/1.0)"}]) do
+  def scrap(url, http_client \\ nil) do
+    http_client = http_client || Application.get_env(:scraphex, :http_client, Scraphex.Http.Req)
+
+    case http_client.get(url,
+           headers: [{"user-agent", "Mozilla/5.0 (compatible; Scraphex/1.0)"}]
+         ) do
       {:ok, %{status: 200, body: body}} ->
         {:ok, Floki.parse_document!(body)}
 

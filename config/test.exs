@@ -13,3 +13,5 @@ config :scraphex, Scraphex.Repo,
 
 # Print only warnings and errors during test
 config :logger, level: :warning
+
+config :scraphex, :http_client, Scraphex.HttpClientMock

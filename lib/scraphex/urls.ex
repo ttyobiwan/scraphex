@@ -25,7 +25,7 @@ defmodule Scraphex.Urls do
     |> URI.parse()
     |> Map.put(:query, nil)
     |> Map.put(:fragment, nil)
-    |> tap(fn uri -> Map.put(uri, :path, normalize_path(uri.path || "/")) end)
+    |> then(fn uri -> Map.put(uri, :path, normalize_path(uri.path || "/")) end)
     |> URI.to_string()
   end
 

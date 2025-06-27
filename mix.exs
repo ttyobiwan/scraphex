@@ -27,7 +27,8 @@ defmodule Scraphex.MixProject do
       {:ecto_sqlite3, "~> 0.19"},
       {:postgrex, ">= 0.0.0"},
       {:req, "~> 0.5.0"},
-      {:floki, "~> 0.37.0"}
+      {:floki, "~> 0.37.0"},
+      {:mox, "~> 1.0", only: :test}
     ]
   end
 

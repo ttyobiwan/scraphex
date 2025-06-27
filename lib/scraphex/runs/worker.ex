@@ -76,7 +76,7 @@ defmodule Scraphex.Runs.Worker do
   """
   def save_link_connections(page, links, run) do
     links
-    |> Pages.get_pages_by_urls_and_run(run)
+    |> Pages.get_pages_by_urls_and_run(run.id)
     |> tap(fn pages -> Pages.create_links(page, pages) end)
   end
 

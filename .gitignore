@@ -26,3 +26,6 @@ scraphex-*.tar
 scraphex_dev
 scraphex_dev-shm
 scraphex_dev-wal
+scraphex_test
+scraphex_test-shm
+scraphex_test-wal
