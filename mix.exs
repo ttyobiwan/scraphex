@@ -28,7 +28,9 @@ defmodule Scraphex.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:req, "~> 0.5.0"},
       {:floki, "~> 0.37.0"},
-      {:mox, "~> 1.0", only: :test}
+      {:mox, "~> 1.0", only: :test},
+      {:bandit, "~> 1.0"},
+      {:plug, "~> 1.14"}
     ]
   end
 

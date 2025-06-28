@@ -32,6 +32,5 @@ iex -S mix
 
 ## TODOs
 
-- [ ] Add tests
-- [ ] Implement web UI for starting runs
+- [ ] Imlement web UI for starting runs
 - [ ] Implement web UI for displaying run graphs

@@ -10,7 +10,8 @@ defmodule Scraphex.Application do
     children = [
       Scraphex.Repo,
       Scraphex.Runs.Worker,
-      Scraphex.Runs.Scheduler
+      Scraphex.Runs.Scheduler,
+      {Bandit, plug: ScraphexWeb.Router, port: 4000}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
