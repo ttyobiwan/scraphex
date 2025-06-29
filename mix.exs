@@ -30,7 +30,8 @@ defmodule Scraphex.MixProject do
       {:floki, "~> 0.37.0"},
       {:mox, "~> 1.0", only: :test},
       {:bandit, "~> 1.0"},
-      {:plug, "~> 1.14"}
+      {:plug, "~> 1.14"},
+      {:file_system, "~> 1.0", only: :dev}
     ]
   end
 

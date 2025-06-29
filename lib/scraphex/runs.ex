@@ -2,6 +2,7 @@ defmodule Scraphex.Runs do
   alias Scraphex.Runs.Scheduler
   alias Scraphex.Runs.Run
   alias Scraphex.Repo
+  import Ecto.Query
 
   @doc """
   Creates a new run object and schedules the start of the scraping process.
@@ -37,5 +38,12 @@ defmodule Scraphex.Runs do
     run
     |> Run.status_changeset(%{status: :completed, completed_at: DateTime.utc_now()})
     |> Repo.update!()
+  end
+
+  @doc """
+  Gets all runs in a desc order.
+  """
+  def get_all() do
+    Repo.all(from r in Run, order_by: [desc: r.inserted_at])
   end
 end

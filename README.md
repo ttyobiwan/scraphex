@@ -32,5 +32,7 @@ iex -S mix
 
 ## TODOs
 
+- [ ] Stopped and failed statuses
+- [ ] Failed pages
 - [ ] Imlement web UI for starting runs
 - [ ] Implement web UI for displaying run graphs
