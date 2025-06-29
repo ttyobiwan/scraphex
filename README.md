@@ -18,10 +18,10 @@ mix setup
 
 You should be good to go at this point.
 
-Run Bandit server:
+Run the application:
 
 ```bash
-mix server
+mix run --no-halt
 ```
 
 Run iex session:
@@ -32,6 +32,7 @@ iex -S mix
 
 ## TODOs
 
+- [ ] Pagination
 - [ ] Stopped and failed statuses
 - [ ] Failed pages
 - [ ] Imlement web UI for starting runs

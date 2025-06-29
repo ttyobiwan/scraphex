@@ -21,10 +21,10 @@ defmodule ScraphexWeb.Renderer do
     "lib/scraphex_web/templates/404.html.eex"
   )
 
-  def home(runs) do
+  def home(runs, messages \\ []) do
     root_layout(%{
       title: "Scraphex | Runs",
-      content: homepage_template(%{runs: runs})
+      content: homepage_template(%{runs: runs, messages: messages})
     })
   end
 

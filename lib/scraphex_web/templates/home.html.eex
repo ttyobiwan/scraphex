@@ -1,5 +1,20 @@
 <h1 class="text-6xl font-bold text-center text-black mb-12">Scraphex</h1>
 
+<%= if !Enum.empty?(@messages) do %>
+  <div class="max-w-2xl mx-auto mb-8">
+    <%= for message <- @messages do %>
+      <div class="border-2 p-4 mb-4 rounded <%= case message.type do
+        :success -> "bg-green-100 border-green-500 text-green-700"
+        :error -> "bg-red-100 border-red-500 text-red-700"
+        :warning -> "bg-yellow-100 border-yellow-500 text-yellow-700"
+        _ -> "bg-gray-100 border-gray-500 text-gray-700"
+      end %>">
+        <%= message.text %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
 <div class="max-w-2xl mx-auto mb-12">
   <form action="/" method="post">
     <div class="flex">

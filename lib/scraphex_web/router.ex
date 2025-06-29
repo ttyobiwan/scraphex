@@ -1,4 +1,5 @@
 defmodule ScraphexWeb.Router do
+  require Logger
   alias ScraphexWeb.Renderer
   alias Scraphex.Runs
   use Plug.Router
@@ -28,13 +29,23 @@ defmodule ScraphexWeb.Router do
   post "/" do
     %{"url" => url} = conn.body_params
 
-    Runs.start_run(url)
+    result = Runs.start_run(url)
+
+    message =
+      case result do
+        {:ok, _run} ->
+          %{type: :success, text: "Run scheduled successfully"}
+
+        {:error, changeset} ->
+          Logger.error("Failed to schedule run: #{inspect(changeset.errors)}")
+          %{type: :error, text: "Failed to schedule run"}
+      end
 
     runs = Runs.get_all()
 
     conn
     |> put_resp_content_type("text/html")
-    |> send_resp(200, Renderer.home(runs))
+    |> send_resp(200, Renderer.home(runs, [message]))
   end
 
   match _ do
