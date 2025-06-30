@@ -4,17 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tailwindcss -i assets/css/app.css -o priv/static/css/app.css --cwd .. --verbose",
-    "build:prod": "tailwindcss -i assets/css/app.css -o priv/static/css/app.css --cwd .. --minify"
+    "build": "npm run build:css && npm run build:js",
+    "build:css": "tailwindcss -i assets/css/app.css -o priv/static/css/app.css --cwd .. --verbose",
+    "build:js": "esbuild js/app.js --bundle --outfile=../priv/static/js/app.js",
+    "build:prod": "npm run build:css:prod && npm run build:js:prod",
+    "build:css:prod": "tailwindcss -i assets/css/app.css -o priv/static/css/app.css --cwd .. --minify",
+    "build:js:prod": "esbuild js/app.js --bundle --outfile=../priv/static/js/app.js --minify"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "devDependencies": {
-    "tailwindcss": "^4.1.11"
-  },
   "dependencies": {
-    "@tailwindcss/cli": "^4.1.11"
+    "@tailwindcss/cli": "^4.1.11",
+    "d3": "^7.9.0",
+    "esbuild": "^0.25.5"
   }
 }

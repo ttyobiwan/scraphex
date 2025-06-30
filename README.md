@@ -32,8 +32,20 @@ iex -S mix
 
 ## TODOs
 
+- [ ] Fix link building (again, there are still some absolute/absolute issues)
+- [ ] Clickable nodes
+- [ ] Search nodes
 - [ ] Pagination
+- [ ] More tests
 - [ ] Stopped and failed statuses
 - [ ] Failed pages
-- [ ] Imlement web UI for starting runs
-- [ ] Implement web UI for displaying run graphs
+- [ ] Run stats
+
+- [x] Implement scraping scheduler
+- [x] Move link handling to a separate module
+- [x] Add tests
+- [x] Fix link building
+- [x] Fix code structure
+- [x] Add better error handling
+- [x] Imlement web UI for starting runs
+- [x] Implement web UI for displaying run graphs

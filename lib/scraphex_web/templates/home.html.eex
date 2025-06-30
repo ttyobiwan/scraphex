@@ -19,7 +19,7 @@
   <form action="/" method="post">
     <div class="flex">
       <input type="url" name="url" placeholder="Enter URL to scrape"
-             class="flex-1 px-4 py-3 border-2 border-black focus:outline-none focus:ring-0" required>
+             class="bg-white flex-1 px-4 py-3 border-2 border-black focus:outline-none focus:ring-0" required>
       <button type="submit"
               class="px-6 py-3 bg-black text-white hover:bg-gray-800 transition duration-200 whitespace-nowrap">
         Start

@@ -48,7 +48,16 @@ defmodule Scraphex.Runs do
   @doc """
   Gets all runs in a desc order.
   """
-  def get_all() do
+  def get_all_runs() do
     Repo.all(from r in Run, order_by: [desc: r.inserted_at])
+  end
+
+  @doc """
+  Gets a single run with all its pages and their connections.
+  """
+  def get_run(id) do
+    Run
+    |> Repo.get(id)
+    |> Repo.preload([:pages, pages: :page_links, pages: :linked_pages])
   end
 end

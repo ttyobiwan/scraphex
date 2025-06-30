@@ -2,6 +2,7 @@ defmodule Scraphex.Pages.Page do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @derive {Jason.Encoder, only: [:id, :url, :title, :run_id, :page_links]}
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type Ecto.UUID
   schema "scrap_pages" do
