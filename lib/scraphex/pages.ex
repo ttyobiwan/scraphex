@@ -26,6 +26,6 @@ defmodule Scraphex.Pages do
   Get pages by the list of urls and run id.
   """
   def get_pages_by_urls_and_run(urls, run_id) do
-    Repo.all(from(p in Page, where: p.url in ^urls and p.run_id == ^run_id, select: p.id))
+    Repo.all(from(p in Page, where: p.url in ^urls and p.run_id == ^run_id, select: %{id: p.id}))
   end
 end
