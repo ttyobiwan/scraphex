@@ -4,7 +4,7 @@ defmodule Scraphex.Runs.WorkerTest do
   import Scraphex.RunFixtures
   import Scraphex.PageFixtures
 
-  use Scraphex.DataCase
+  use Scraphex.DataCase, async: true
 
   setup :verify_on_exit!
 

@@ -36,11 +36,15 @@ iex -S mix
 - [ ] Clickable nodes
 - [ ] Search nodes
 - [ ] Pagination
-- [ ] More tests
 - [ ] Stopped and failed statuses
 - [ ] Failed pages
 - [ ] Run stats
+- [ ] Remove sleep from the tests
+- [ ] Make limits configurable
 
+- [ ] Scheduler tests
+
+- [x] Worker tests
 - [x] Implement scraping scheduler
 - [x] Move link handling to a separate module
 - [x] Add tests
