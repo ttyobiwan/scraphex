@@ -23,7 +23,7 @@ defmodule ScraphexWeb.Router do
 
     conn
     |> put_resp_content_type("text/html")
-    |> send_resp(200, Renderer.home(%{runs: runs}))
+    |> send_resp(200, Renderer.home(%{runs: runs, messages: []}))
   end
 
   post "/" do
