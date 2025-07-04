@@ -4,7 +4,7 @@ Elixir web scrapping app, with graph display of scrapped pages.
 
 ## Installation
 
-Start Postgres using Docker Compose:
+The app is using SQLite by default. You can also switch repo to postgres and start database using docker compose:
 
 ```bash
 docker-compose up -d
