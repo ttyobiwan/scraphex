@@ -111,8 +111,15 @@ defmodule Scraphex.Runs.Scheduler do
       MapSet.member?(state.visited, link)
     end)
     |> case do
-      [] -> nil
-      visited_links -> Worker.save_link_connections(page, visited_links, state.run)
+      [] ->
+        nil
+
+      visited_links ->
+        Worker.save_link_connections(
+          page,
+          Enum.map(visited_links, fn link -> Urls.build_absolute_url(state.base_url, link) end),
+          state.run
+        )
     end
 
     # Remove already visited links
@@ -151,7 +158,7 @@ defmodule Scraphex.Runs.Scheduler do
 
     # Process each result recursively and accumulate state
     Enum.reduce(results, updated_state, fn {new_page, new_links}, acc_state ->
-      process_links(acc_state, new_page, prepare_links(state, page, new_links))
+      process_links(acc_state, new_page, prepare_links(acc_state, new_page, new_links))
     end)
   end
 

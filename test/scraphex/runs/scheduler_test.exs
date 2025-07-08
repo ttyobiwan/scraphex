@@ -1,9 +1,7 @@
 defmodule Scraphex.Runs.SchedulerTest do
   import Mox
   import Scraphex.RunFixtures
-  import Scraphex.PageFixtures
   alias Scraphex.Pages.Page
-  alias Scraphex.Pages
   alias Scraphex.Runs.Scheduler
   alias Scraphex.Runs
 
@@ -103,7 +101,7 @@ defmodule Scraphex.Runs.SchedulerTest do
 
       Scheduler.start_run(run)
 
-      Process.sleep(100)
+      Process.sleep(150)
 
       updated_run = Runs.get_run(run.id)
       assert updated_run.status == :completed

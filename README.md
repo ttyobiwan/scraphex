@@ -32,7 +32,6 @@ iex -S mix
 
 ## TODOs
 
-- [ ] Fix link building (again, there are still some absolute/absolute issues)
 - [ ] Clickable nodes
 - [ ] Search nodes
 - [ ] Pagination
@@ -42,7 +41,7 @@ iex -S mix
 - [ ] Remove sleep from the tests
 - [ ] Make limits configurable
 
-- [ ] Scheduler tests
+- [ ] Fix link building (again, there are still some absolute/absolute issues)
 
 - [x] Worker tests
 - [x] Implement scraping scheduler
@@ -53,3 +52,4 @@ iex -S mix
 - [x] Add better error handling
 - [x] Imlement web UI for starting runs
 - [x] Implement web UI for displaying run graphs
+- [x] Scheduler tests
