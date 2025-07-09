@@ -10,8 +10,8 @@ defmodule Scraphex.Scrapper do
     case http_client.get(url,
            headers: [{"user-agent", "Mozilla/5.0 (compatible; Scraphex/1.0)"}]
          ) do
-      {:ok, %{status: 200, body: body}} ->
-        {:ok, Floki.parse_document!(body)}
+      {:ok, %{status: 200, body: body, final_url: final_url}} ->
+        {:ok, Floki.parse_document!(body), final_url}
 
       {:ok, %{status: 404}} ->
         {:error, :not_found}

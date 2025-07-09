@@ -13,13 +13,13 @@ defmodule Scraphex.Runs.Worker do
     url
     |> Scrapper.scrap()
     |> case do
-      {:ok, doc} ->
+      {:ok, doc, final_url} ->
         title = Scrapper.get_title(doc)
         links = Scrapper.get_relative_links(doc)
 
         page =
           Pages.create_page!(%{
-            url: Urls.clean_link(url),
+            url: Urls.clean_link(final_url),
             title: title,
             run_id: run_id
           })

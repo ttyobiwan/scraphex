@@ -18,10 +18,19 @@ defmodule Scraphex.Runs.SchedulerTest do
         case url do
           "http://example.com/" ->
             {:ok,
-             %{status: 200, body: "<html><title>Home</title><a href='/page1'>Link</a></html>"}}
+             %{
+               status: 200,
+               body: "<html><title>Home</title><a href='/page1'>Link</a></html>",
+               final_url: "http://example.com/"
+             }}
 
           "http://example.com/page1/" ->
-            {:ok, %{status: 200, body: "<html><title>Page1</title></html>"}}
+            {:ok,
+             %{
+               status: 200,
+               body: "<html><title>Page1</title></html>",
+               final_url: "http://example.com/page1/"
+             }}
         end
       end)
 
@@ -37,7 +46,7 @@ defmodule Scraphex.Runs.SchedulerTest do
       run = run_fixture(%{url: "http://example.com"})
 
       expect(Scraphex.HttpClientMock, :get, fn _url, _opts ->
-        {:ok, %{status: 404}}
+        {:ok, %{status: 404, final_url: "http://example.com/"}}
       end)
 
       Scheduler.start_run(run)
@@ -56,7 +65,11 @@ defmodule Scraphex.Runs.SchedulerTest do
         case url do
           "http://example.com/" ->
             {:ok,
-             %{status: 200, body: "<html><title>Deep</title><a href='/deeper/1'>Link</a></html>"}}
+             %{
+               status: 200,
+               body: "<html><title>Deep</title><a href='/deeper/1'>Link</a></html>",
+               final_url: "http://example.com/"
+             }}
 
           url ->
             case Regex.run(~r|/deeper/(\d+)/?$|, url) do
@@ -67,14 +80,16 @@ defmodule Scraphex.Runs.SchedulerTest do
                 {:ok,
                  %{
                    status: 200,
-                   body: "<html><title>Deep</title><a href='/deeper/#{next_id}'>Link</a></html>"
+                   body: "<html><title>Deep</title><a href='/deeper/#{next_id}'>Link</a></html>",
+                   final_url: url
                  }}
 
               _ ->
                 {:ok,
                  %{
                    status: 200,
-                   body: "<html><title>Deep</title><a href='/deeper/1'>Link</a></html>"
+                   body: "<html><title>Deep</title><a href='/deeper/1'>Link</a></html>",
+                   final_url: url
                  }}
             end
         end
@@ -95,8 +110,13 @@ defmodule Scraphex.Runs.SchedulerTest do
         1..105 |> Enum.map(fn i -> "<a href='/page#{i}'>Link #{i}</a>" end) |> Enum.join()
 
       Scraphex.HttpClientMock
-      |> expect(:get, 100, fn _url, _opts ->
-        {:ok, %{status: 200, body: "<html><title>Many Links</title>#{many_links}</html>"}}
+      |> expect(:get, 100, fn url, _opts ->
+        {:ok,
+         %{
+           status: 200,
+           body: "<html><title>Many Links</title>#{many_links}</html>",
+           final_url: url
+         }}
       end)
 
       Scheduler.start_run(run)
@@ -123,7 +143,8 @@ defmodule Scraphex.Runs.SchedulerTest do
                  <a href='/page1'>Duplicate Link 1</a>
                  <a href='/page1/'>Link 1 with trailing slash</a>
                </html>
-               """
+               """,
+               final_url: "http://example.com/"
              }}
 
           "http://example.com/page1/" ->
@@ -136,7 +157,8 @@ defmodule Scraphex.Runs.SchedulerTest do
                  <a href='/'>Back to home</a>
                  <a href='/page1'>Self reference</a>
                </html>
-               """
+               """,
+               final_url: "http://example.com/page1/"
              }}
         end
       end)

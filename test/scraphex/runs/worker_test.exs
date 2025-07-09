@@ -20,7 +20,8 @@ defmodule Scraphex.Runs.WorkerTest do
              <title>Test</title>
              <a href='/page1'>Link</a>
              <a href='/page2'>Link</a>
-             </html>"
+             </html>",
+           final_url: "http://scraphex.com/"
          }}
       end)
 
@@ -34,7 +35,7 @@ defmodule Scraphex.Runs.WorkerTest do
       run = run_fixture()
 
       expect(Scraphex.HttpClientMock, :get, fn _url, _opts ->
-        {:ok, %{status: 404}}
+        {:ok, %{status: 404, final_url: "http://scraphex.com/"}}
       end)
 
       assert {:error, :not_found} = Worker.process_page("http://scraphex.com/", run.id)
@@ -48,13 +49,23 @@ defmodule Scraphex.Runs.WorkerTest do
       expect(Scraphex.HttpClientMock, :get, 3, fn url, _opts ->
         case url do
           "http://scraphex.com/page1" ->
-            {:ok, %{status: 200, body: "<html><title>Page1</title></html>"}}
+            {:ok,
+             %{
+               status: 200,
+               body: "<html><title>Page1</title></html>",
+               final_url: "http://scraphex.com/page1"
+             }}
 
           "http://scraphex.com/page2" ->
-            {:ok, %{status: 200, body: "<html><title>Page2</title></html>"}}
+            {:ok,
+             %{
+               status: 200,
+               body: "<html><title>Page2</title></html>",
+               final_url: "http://scraphex.com/page2"
+             }}
 
           "http://scraphex.com/page3" ->
-            {:ok, %{status: 404}}
+            {:ok, %{status: 404, final_url: "http://scraphex.com/page3"}}
         end
       end)
 
@@ -97,6 +108,30 @@ defmodule Scraphex.Runs.WorkerTest do
       assert length(linked_page_ids) == 2
       assert Enum.member?(linked_page_ids, page2.id)
       assert Enum.member?(linked_page_ids, page3.id)
+    end
+  end
+
+  describe "redirect handling" do
+    test "uses final URL after redirect when creating page" do
+      run = run_fixture()
+
+      # Mock a redirect from /protected to /login
+      expect(Scraphex.HttpClientMock, :get, fn _url, _opts ->
+        {:ok,
+         %{
+           status: 200,
+           body: "<html><title>Login Page</title><form>Login form</form></html>",
+           final_url: "http://scraphex.com/login"
+         }}
+      end)
+
+      # Request protected page but expect to get login page content
+      assert {:ok, page, links} = Worker.process_page("http://scraphex.com/protected", run.id)
+
+      # Should store the final URL (after redirect), not the original URL
+      assert page.url == "http://scraphex.com/login/"
+      assert page.title == "Login Page"
+      assert links == []
     end
   end
 end

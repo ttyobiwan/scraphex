@@ -1,6 +1,8 @@
 # Scraphex
 
-Elixir web scrapping app, with graph display of scrapped pages.
+Scraphex is a Elixir app for web scrapping with graph display of scrapped pages.
+
+In the current version, it scraps the title of each page, extracts all relative links, proceeds to scrape those pages, and saves the connections between them.
 
 ## Installation
 
@@ -32,16 +34,21 @@ iex -S mix
 
 ## TODOs
 
+UI:
+
 - [ ] Clickable nodes
 - [ ] Search nodes
 - [ ] Pagination
-- [ ] Stopped and failed statuses
-- [ ] Failed pages
 - [ ] Run stats
+
+Backend:
+
 - [ ] Remove sleep from the tests
 - [ ] Make limits configurable
+- [ ] Stopped and failed statuses
+- [ ] Failed pages
 
-- [ ] Fix link building (again, there are still some absolute/absolute issues)
+Done:
 
 - [x] Worker tests
 - [x] Implement scraping scheduler
@@ -53,3 +60,5 @@ iex -S mix
 - [x] Imlement web UI for starting runs
 - [x] Implement web UI for displaying run graphs
 - [x] Scheduler tests
+- [x] Fix link building (again, there are still some absolute/absolute issues)
+- [x] Do something about redirects

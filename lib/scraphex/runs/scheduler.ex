@@ -56,8 +56,19 @@ defmodule Scraphex.Runs.Scheduler do
       {:ok, page, links} ->
         Logger.info("Successfully processed root page, found #{length(links)} links")
 
+        # Update base URL if root page was redirected
+        updated_state =
+          case page.url do
+            ^root_url ->
+              state
+
+            final_url ->
+              Logger.info("Root page redirected from #{root_url} to #{final_url}")
+              Map.put(state, :base_url, Urls.base_url(final_url))
+          end
+
         final_state =
-          state
+          updated_state
           |> update_state(["/"])
           |> process_links(page, links)
 

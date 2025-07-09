@@ -20,10 +20,11 @@ defmodule Scraphex.ScrapperTest do
 
       Scraphex.HttpClientMock
       |> expect(:get, fn _url, _opts ->
-        {:ok, %{status: 200, body: html_body}}
+        {:ok, %{status: 200, body: html_body, final_url: "https://example.com"}}
       end)
 
-      assert {:ok, doc} = Scrapper.scrap("https://example.com")
+      assert {:ok, doc, final_url} = Scrapper.scrap("https://example.com")
+      assert final_url == "https://example.com"
 
       assert doc == [
                {"html", [],
@@ -41,7 +42,7 @@ defmodule Scraphex.ScrapperTest do
     test "returns http_error for other status codes" do
       Scraphex.HttpClientMock
       |> expect(:get, fn _url, _opts ->
-        {:ok, %{status: 500}}
+        {:ok, %{status: 500, final_url: "https://example.com"}}
       end)
 
       assert {:error, {:http_error, 500}} =
@@ -55,6 +56,25 @@ defmodule Scraphex.ScrapperTest do
       end)
 
       assert {:error, :timeout} = Scrapper.scrap("https://example.com", Scraphex.HttpClientMock)
+    end
+
+    test "returns final URL after redirect" do
+      html_body = """
+      <html>
+        <head><title>Login Page</title></head>
+        <body>
+          <form>Login form</form>
+        </body>
+      </html>
+      """
+
+      Scraphex.HttpClientMock
+      |> expect(:get, fn _url, _opts ->
+        {:ok, %{status: 200, body: html_body, final_url: "https://example.com/login"}}
+      end)
+
+      assert {:ok, _doc, final_url} = Scrapper.scrap("https://example.com/protected")
+      assert final_url == "https://example.com/login"
     end
   end
 
