@@ -15,20 +15,26 @@
   </div>
 <% end %>
 
-<div class="max-w-2xl mx-auto mb-12">
+<div class="max-w-2xl mx-auto mb-12" id="run-form">
   <form action="/" method="post">
     <div class="flex">
       <input type="url" name="url" placeholder="Enter URL to scrape"
-             class="bg-white flex-1 px-4 py-3 border-2 border-black focus:outline-none focus:ring-0" required>
+             class="bg-white flex-1 px-4 py-3 border-2 border-black border-r-0 focus:outline-none focus:ring-0" required>
+      <input type="number" name="max_depth" placeholder="Depth" min="1" max="100"
+             class="bg-white w-32 px-3 py-3 border-2 border-black border-r-0 focus:outline-none focus:ring-0"
+             title="Max depth (default: 30)">
+      <input type="number" name="max_pages" placeholder="Limit" min="1" max="10000"
+             class="bg-white w-32 px-3 py-3 border-2 border-black border-r-0 focus:outline-none focus:ring-0"
+             title="Max pages (default: 100)">
       <button type="submit"
-              class="px-6 py-3 bg-black text-white hover:bg-gray-800 transition duration-200 whitespace-nowrap">
+              class="px-6 py-3 bg-black text-white hover:bg-gray-800 transition duration-200 whitespace-nowrap border-2 border-black">
         Start
       </button>
     </div>
   </form>
 </div>
 
-<div class="max-w-2xl mx-auto">
+<div class="max-w-2xl mx-auto" id="run-container">
   <h2 class="text-2xl font-semibold mb-6 text-black">Recent runs</h2>
   <div class="space-y-4">
     <%= for run <- @runs do %>
@@ -38,9 +44,14 @@
             <%= run.url %>
           </div>
           <div class="flex justify-between items-center text-sm">
-            <span class="px-3 py-1 border border-black text-black">
-              <%= run.status %>
-            </span>
+            <div class="flex items-center space-x-2">
+              <span class="px-3 py-1 border border-black text-black">
+                <%= run.status %>
+              </span>
+              <span class="text-gray-600">
+                Depth: <%= run.max_depth %> | Pages: <%= run.max_pages %>
+              </span>
+            </div>
             <span class="text-gray-600">
               <%= Calendar.strftime(run.inserted_at, "%m/%d %H:%M") %>
             </span>

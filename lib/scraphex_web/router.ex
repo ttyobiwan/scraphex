@@ -27,9 +27,16 @@ defmodule ScraphexWeb.Router do
   end
 
   post "/" do
-    %{"url" => url} = conn.body_params
-
-    result = Runs.start_run(url)
+    result =
+      %{
+        url: conn.body_params["url"],
+        max_depth: conn.body_params["max_depth"],
+        max_pages: conn.body_params["max_pages"]
+      }
+      |> Map.reject(fn {_k, v} -> v == nil or v == "" end)
+      |> convert_to_integer(:max_depth)
+      |> convert_to_integer(:max_pages)
+      |> Runs.start_run()
 
     message =
       case result do
@@ -70,5 +77,24 @@ defmodule ScraphexWeb.Router do
     conn
     |> put_resp_content_type("text/html")
     |> send_resp(404, Renderer.not_found())
+  end
+
+  defp convert_to_integer(attrs, key) do
+    case Map.get(attrs, key) do
+      nil ->
+        attrs
+
+      value when is_binary(value) ->
+        case Integer.parse(value) do
+          {int_value, _} -> Map.put(attrs, key, int_value)
+          :error -> attrs
+        end
+
+      value when is_integer(value) ->
+        attrs
+
+      _ ->
+        attrs
+    end
   end
 end

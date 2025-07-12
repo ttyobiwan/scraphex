@@ -9,9 +9,6 @@ defmodule Scraphex.Runs.Scheduler do
 
   use GenServer
 
-  @max_depth 30
-  @max_pages 100
-
   @doc """
   Schedules start of a run.
   """
@@ -100,12 +97,12 @@ defmodule Scraphex.Runs.Scheduler do
 
     # Check limits
     cond do
-      state.depth >= @max_depth ->
-        Logger.info("Max depth reached (#{@max_depth}), stopping crawl")
+      state.depth >= state.run.max_depth ->
+        Logger.info("Max depth reached (#{state.run.max_depth}), stopping crawl")
         state
 
-      state.total_processed >= @max_pages ->
-        Logger.info("Max pages reached (#{@max_pages}), stopping crawl")
+      state.total_processed >= state.run.max_pages ->
+        Logger.info("Max pages reached (#{state.run.max_pages}), stopping crawl")
         state
 
       true ->
@@ -146,7 +143,7 @@ defmodule Scraphex.Runs.Scheduler do
         MapSet.member?(state.visited, link)
       end)
 
-    Enum.take(new_links, @max_pages - state.total_processed)
+    Enum.take(new_links, state.run.max_pages - state.total_processed)
   end
 
   defp do_process_links(state = %State{}, page = %Page{}, []) do

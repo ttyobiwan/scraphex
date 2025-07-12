@@ -7,8 +7,8 @@ defmodule Scraphex.Runs do
   @doc """
   Creates a new run object and schedules the start of the scraping process.
   """
-  def start_run(url) do
-    case create_run(%{url: url}) do
+  def start_run(attrs) do
+    case create_run(attrs) do
       {:ok, run} ->
         Scheduler.start_run(run)
         {:ok, run}
