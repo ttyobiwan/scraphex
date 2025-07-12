@@ -15,8 +15,8 @@ defmodule Scraphex.Runs.Scheduler do
   @doc """
   Schedules start of a run.
   """
-  def start_run(run = %Run{}) do
-    GenServer.cast(__MODULE__, {:start, run})
+  def start_run(run = %Run{}, notify_pid \\ nil) do
+    GenServer.cast(__MODULE__, {:start, run, notify_pid})
   end
 
   def start_link(init_arg) do
@@ -28,11 +28,15 @@ defmodule Scraphex.Runs.Scheduler do
     {:ok, []}
   end
 
-  def handle_cast({:start, run = %Run{}}, state) do
+  def handle_cast({:start, run = %Run{}, notify_pid}, state) do
     run
     |> Runs.mark_run_as_started!()
     |> process_run()
     |> Runs.mark_run_as_completed!()
+
+    if notify_pid do
+      send(notify_pid, {:run_completed, run.id})
+    end
 
     {:noreply, state}
   end
@@ -110,6 +114,7 @@ defmodule Scraphex.Runs.Scheduler do
   end
 
   defp prepare_links(state = %State{}, page = %Page{}, links) do
+    Logger.info("Preparing links for page: #{page.url}, #{links}")
     # Normalize and deduplicate links
     normalized_links =
       links
@@ -126,6 +131,8 @@ defmodule Scraphex.Runs.Scheduler do
         nil
 
       visited_links ->
+        Logger.info("Found already visited links: #{page.url}, #{visited_links}")
+
         Worker.save_link_connections(
           page,
           Enum.map(visited_links, fn link -> Urls.build_absolute_url(state.base_url, link) end),

@@ -12,6 +12,6 @@ config :scraphex, Scraphex.Repo,
   pool_size: System.schedulers_online() * 2
 
 # Print only warnings and errors during test
-config :logger, level: :warning
+config :logger, level: :critical
 
 config :scraphex, :http_client, Scraphex.HttpClientMock

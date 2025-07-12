@@ -38,7 +38,7 @@ defmodule Scraphex.Runs.WorkerTest do
         {:ok, %{status: 404, final_url: "http://scraphex.com/"}}
       end)
 
-      assert {:error, :not_found} = Worker.process_page("http://scraphex.com/", run.id)
+      {:error, :not_found} = Worker.process_page("http://scraphex.com/", run.id)
     end
   end
 

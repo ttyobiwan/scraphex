@@ -34,9 +34,9 @@ defmodule Scraphex.Runs.SchedulerTest do
         end
       end)
 
-      Scheduler.start_run(run)
+      Scheduler.start_run(run, self())
 
-      Process.sleep(100)
+      assert_receive {:run_completed, _run_id}, 5000
 
       updated_run = Runs.get_run(run.id)
       assert updated_run.status == :completed
@@ -49,9 +49,9 @@ defmodule Scraphex.Runs.SchedulerTest do
         {:ok, %{status: 404, final_url: "http://example.com/"}}
       end)
 
-      Scheduler.start_run(run)
+      Scheduler.start_run(run, self())
 
-      Process.sleep(100)
+      assert_receive {:run_completed, _run_id}, 5000
 
       updated_run = Runs.get_run(run.id)
       assert updated_run.status == :completed
@@ -95,9 +95,9 @@ defmodule Scraphex.Runs.SchedulerTest do
         end
       end)
 
-      Scheduler.start_run(run)
+      Scheduler.start_run(run, self())
 
-      Process.sleep(100)
+      assert_receive {:run_completed, _run_id}, 5000
 
       updated_run = Runs.get_run(run.id)
       assert updated_run.status == :completed
@@ -119,9 +119,9 @@ defmodule Scraphex.Runs.SchedulerTest do
          }}
       end)
 
-      Scheduler.start_run(run)
+      Scheduler.start_run(run, self())
 
-      Process.sleep(150)
+      assert_receive {:run_completed, _run_id}, 5000
 
       updated_run = Runs.get_run(run.id)
       assert updated_run.status == :completed
@@ -163,9 +163,9 @@ defmodule Scraphex.Runs.SchedulerTest do
         end
       end)
 
-      Scheduler.start_run(run)
+      Scheduler.start_run(run, self())
 
-      Process.sleep(100)
+      assert_receive {:run_completed, _run_id}, 5000
 
       updated_run = Runs.get_run(run.id)
       assert updated_run.status == :completed
