@@ -4,6 +4,7 @@ defmodule Scraphex.Runs.State do
     :base_url,
     :visited,
     :depth,
-    :total_processed
+    :total_processed,
+    :stopped
   ]
 end

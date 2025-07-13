@@ -37,11 +37,12 @@ defmodule Scraphex.Runs do
   end
 
   @doc """
-  Marks run as completed.
+  Marks run as finished.
+  That means it either succeeded, stopped or failed.
   """
-  def mark_run_as_completed!(run = %Run{}) do
+  def mark_run_as_finished!(run = %Run{}, status) do
     run
-    |> Run.status_changeset(%{status: :completed, completed_at: DateTime.utc_now()})
+    |> Run.status_changeset(%{status: status, finished_at: DateTime.utc_now()})
     |> Repo.update!()
   end
 

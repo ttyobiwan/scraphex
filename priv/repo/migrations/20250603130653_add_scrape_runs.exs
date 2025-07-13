@@ -10,7 +10,7 @@ defmodule Scraphex.Repo.Migrations.AddScrapRun do
       add :max_depth, :integer, default: 30, null: false
       add :max_pages, :integer, default: 100, null: false
       add :started_at, :utc_datetime
-      add :completed_at, :utc_datetime
+      add :finished_at, :utc_datetime
 
       timestamps(type: :utc_datetime)
     end

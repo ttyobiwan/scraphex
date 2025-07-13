@@ -29,7 +29,19 @@ defmodule Scraphex.Runs.Scheduler do
     run
     |> Runs.mark_run_as_started!()
     |> process_run()
-    |> Runs.mark_run_as_completed!()
+    |> then(fn result ->
+      case result do
+        {:ok, run} ->
+          Runs.mark_run_as_finished!(run, :successful)
+
+        {:error, {run, :stopped}} ->
+          Runs.mark_run_as_finished!(run, :stopped)
+
+        {:error, {run, reason}} ->
+          Logger.error("Processing run failed: #{reason}")
+          Runs.mark_run_as_finished!(run, :failed)
+      end
+    end)
 
     if notify_pid do
       send(notify_pid, {:run_completed, run.id})
@@ -46,7 +58,8 @@ defmodule Scraphex.Runs.Scheduler do
       base_url: Urls.base_url(run.url),
       visited: MapSet.new(),
       depth: 0,
-      total_processed: 0
+      total_processed: 0,
+      stopped: false
     }
 
     # Process the root page
@@ -58,7 +71,7 @@ defmodule Scraphex.Runs.Scheduler do
         Logger.info("Successfully processed root page, found #{length(links)} links")
 
         # Update base URL if root page was redirected
-        updated_state =
+        state =
           case page.url do
             ^root_url ->
               state
@@ -68,21 +81,29 @@ defmodule Scraphex.Runs.Scheduler do
               Map.put(state, :base_url, Urls.base_url(final_url))
           end
 
-        final_state =
-          updated_state
+        # Final state
+        state =
+          state
           |> update_state(["/"])
-          |> process_links(page, links)
+          |> then(fn state ->
+            process_links(state, page, prepare_links(state, page, links))
+          end)
 
-        Logger.info(
-          "Done processing all links: total_processed=#{final_state.total_processed}, final_depth=#{final_state.depth}"
-        )
+        if state.stopped == false do
+          Logger.info(
+            "Done processing all links: total_processed=#{state.total_processed}, final_depth=#{state.depth}"
+          )
+
+          {:ok, run}
+        else
+          Logger.info("Stopping proccessing after reaching limits")
+          {:error, {run, :stopped}}
+        end
 
       {:error, reason} ->
-        Logger.error("Failed to process root page: #{inspect(reason)}")
-        Logger.info("Stopping crawl due to root page failure")
+        Logger.info("Stopping crawl due to root page failure: #{reason}")
+        {:error, {run, reason}}
     end
-
-    run
   end
 
   defp process_links(state = %State{}, page = %Page{}, []) do
@@ -95,23 +116,33 @@ defmodule Scraphex.Runs.Scheduler do
       "Processing links: page_url=#{page.url} links=#{length(links)} depth=#{state.depth} total_processed=#{state.total_processed}"
     )
 
-    # Check limits
     cond do
+      state.stopped ->
+        state
+
       state.depth >= state.run.max_depth ->
         Logger.info("Max depth reached (#{state.run.max_depth}), stopping crawl")
-        state
+        Map.put(state, :stopped, true)
 
       state.total_processed >= state.run.max_pages ->
         Logger.info("Max pages reached (#{state.run.max_pages}), stopping crawl")
-        state
+        Map.put(state, :stopped, true)
 
       true ->
-        do_process_links(state, page, prepare_links(state, page, links))
+        # If we took a max amount of links, means we have to stop after processing
+        # It's a little hacky to do this here, but works well
+        state =
+          if length(links) == state.run.max_pages - state.total_processed do
+            Map.put(state, :stopped, true)
+          else
+            state
+          end
+
+        do_process_links(state, page, links)
     end
   end
 
   defp prepare_links(state = %State{}, page = %Page{}, links) do
-    Logger.info("Preparing links for page: #{page.url}, #{links}")
     # Normalize and deduplicate links
     normalized_links =
       links
@@ -146,12 +177,6 @@ defmodule Scraphex.Runs.Scheduler do
     Enum.take(new_links, state.run.max_pages - state.total_processed)
   end
 
-  defp do_process_links(state = %State{}, page = %Page{}, []) do
-    # If no new links or limits reached, return current state
-    Logger.info("No new links to process for page: #{page.url}")
-    state
-  end
-
   defp do_process_links(state = %State{}, page = %Page{}, links) do
     Logger.info("Processing #{length(links)} new links from page: #{page.url}")
 
@@ -173,7 +198,11 @@ defmodule Scraphex.Runs.Scheduler do
 
     # Process each result recursively and accumulate state
     Enum.reduce(results, updated_state, fn {new_page, new_links}, acc_state ->
-      process_links(acc_state, new_page, prepare_links(acc_state, new_page, new_links))
+      if acc_state.stopped do
+        acc_state
+      else
+        process_links(acc_state, new_page, prepare_links(acc_state, new_page, new_links))
+      end
     end)
   end
 

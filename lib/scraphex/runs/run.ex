@@ -3,18 +3,22 @@ defmodule Scraphex.Runs.Run do
   import Ecto.Changeset
 
   @derive {Jason.Encoder,
-           only: [:id, :url, :status, :max_depth, :max_pages, :started_at, :completed_at]}
+           only: [:id, :url, :status, :max_depth, :max_pages, :started_at, :finished_at]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "scrap_runs" do
     field :url, :string
-    field :status, Ecto.Enum, values: [:created, :started, :completed], default: :created
+
+    field :status, Ecto.Enum,
+      values: [:created, :started, :successful, :failed, :stopped],
+      default: :created
+
     field :max_depth, :integer, default: 30
     field :max_pages, :integer, default: 100
 
     has_many :pages, Scraphex.Pages.Page
 
     field :started_at, :utc_datetime
-    field :completed_at, :utc_datetime
+    field :finished_at, :utc_datetime
 
     timestamps(type: :utc_datetime)
   end
@@ -29,7 +33,7 @@ defmodule Scraphex.Runs.Run do
 
   def status_changeset(run, attrs) do
     run
-    |> cast(attrs, [:status, :started_at, :completed_at])
+    |> cast(attrs, [:status, :started_at, :finished_at])
     |> validate_required([:status])
   end
 end

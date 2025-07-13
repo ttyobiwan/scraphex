@@ -39,7 +39,7 @@ defmodule Scraphex.Runs.SchedulerTest do
       assert_receive {:run_completed, _run_id}, 5000
 
       updated_run = Runs.get_run(run.id)
-      assert updated_run.status == :completed
+      assert updated_run.status == :successful
     end
 
     test "handles root page failure" do
@@ -54,7 +54,7 @@ defmodule Scraphex.Runs.SchedulerTest do
       assert_receive {:run_completed, _run_id}, 5000
 
       updated_run = Runs.get_run(run.id)
-      assert updated_run.status == :completed
+      assert updated_run.status == :failed
     end
 
     test "respects max depth limit" do
@@ -100,17 +100,17 @@ defmodule Scraphex.Runs.SchedulerTest do
       assert_receive {:run_completed, _run_id}, 5000
 
       updated_run = Runs.get_run(run.id)
-      assert updated_run.status == :completed
+      assert updated_run.status == :stopped
     end
 
     test "respects max pages limit" do
-      run = run_fixture(%{url: "http://example.com"})
+      run = run_fixture(%{url: "http://example.com", max_pages: 10})
 
       many_links =
-        1..105 |> Enum.map(fn i -> "<a href='/page#{i}'>Link #{i}</a>" end) |> Enum.join()
+        1..11 |> Enum.map(fn i -> "<a href='/page#{i}'>Link #{i}</a>" end) |> Enum.join()
 
       Scraphex.HttpClientMock
-      |> expect(:get, 100, fn url, _opts ->
+      |> expect(:get, 10, fn url, _opts ->
         {:ok,
          %{
            status: 200,
@@ -124,7 +124,7 @@ defmodule Scraphex.Runs.SchedulerTest do
       assert_receive {:run_completed, _run_id}, 5000
 
       updated_run = Runs.get_run(run.id)
-      assert updated_run.status == :completed
+      assert updated_run.status == :stopped
     end
 
     test "skips duplicates" do
@@ -168,7 +168,7 @@ defmodule Scraphex.Runs.SchedulerTest do
       assert_receive {:run_completed, _run_id}, 5000
 
       updated_run = Runs.get_run(run.id)
-      assert updated_run.status == :completed
+      assert updated_run.status == :successful
 
       pages = Repo.all(from p in Page, where: p.run_id == ^run.id)
       assert length(pages) == 2

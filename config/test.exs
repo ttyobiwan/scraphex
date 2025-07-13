@@ -11,7 +11,7 @@ config :scraphex, Scraphex.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
 
-# Print only warnings and errors during test
+# Print only criticals during test
 config :logger, level: :critical
 
 config :scraphex, :http_client, Scraphex.HttpClientMock
