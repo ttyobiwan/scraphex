@@ -8,6 +8,8 @@ On the backend, Scraphex uses GenServers + Floki + Ecto to do the scraping work 
 
 On the UI part, we have Bandit server that returns just regular HTML with Tailwind styling.
 
+This is not the most sophisticated and robust scrapper on the planet, neither the ui is the fanciest, but I just wanted to build some Elixir stuff without using Phoenix.
+
 ## Installation
 
 The app is using SQLite by default. You can also switch repo to postgres and start database using docker compose:
