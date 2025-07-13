@@ -10,6 +10,11 @@ On the UI part, we have Bandit server that returns just regular HTML with Tailwi
 
 This is not the most sophisticated and robust scrapper on the planet, neither the ui is the fanciest, but I just wanted to build some Elixir stuff without using Phoenix.
 
+<div align="center">
+  <img width="400" height="300" alt="image" src="https://github.com/user-attachments/assets/69a9c488-8d08-48d0-bb10-3dc04e9cc9cf" />
+  <img width="400" height="395" alt="image" src="https://github.com/user-attachments/assets/290ea2c8-b22b-498c-bb27-8474384ff716" />
+</div>
+
 ## Installation
 
 The app is using SQLite by default. You can also switch repo to postgres and start database using docker compose:
