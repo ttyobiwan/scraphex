@@ -47,7 +47,6 @@ UI:
 
 Backend:
 
-- [ ] Stopped and failed statuses
 - [ ] Failed pages
 
 Done:
@@ -66,3 +65,4 @@ Done:
 - [x] Do something about redirects
 - [x] Remove sleep from the tests
 - [x] Make limits configurable
+- [x] Stopped and failed statuses

@@ -29,19 +29,17 @@ defmodule Scraphex.Runs.Scheduler do
     run
     |> Runs.mark_run_as_started!()
     |> process_run()
-    |> then(fn result ->
-      case result do
-        {:ok, run} ->
-          Runs.mark_run_as_finished!(run, :successful)
+    |> case do
+      {:ok, run} ->
+        Runs.mark_run_as_finished!(run, :successful)
 
-        {:error, {run, :stopped}} ->
-          Runs.mark_run_as_finished!(run, :stopped)
+      {:error, {run, :stopped}} ->
+        Runs.mark_run_as_finished!(run, :stopped)
 
-        {:error, {run, reason}} ->
-          Logger.error("Processing run failed: #{reason}")
-          Runs.mark_run_as_finished!(run, :failed)
-      end
-    end)
+      {:error, {run, reason}} ->
+        Logger.error("Processing run failed: #{reason}")
+        Runs.mark_run_as_finished!(run, :failed)
+    end
 
     if notify_pid do
       send(notify_pid, {:run_completed, run.id})
@@ -62,13 +60,29 @@ defmodule Scraphex.Runs.Scheduler do
       stopped: false
     }
 
-    # Process the root page
-    root_url = Urls.build_absolute_url(state.base_url, "/")
-    Logger.info("Processing root page: #{root_url}")
+    case process_root_page(state) do
+      {:ok, state, {page, links}} ->
+        state = process_links(state, page, prepare_links(state, page, links))
 
-    case Worker.process_page(root_url, run.id) do
+        if state.stopped == true do
+          {:error, {run, :stopped}}
+        else
+          {:ok, run}
+        end
+
+      {:error, reason} ->
+        {:error, {run, reason}}
+    end
+  end
+
+  defp process_root_page(state = %State{}) do
+    root_url = Urls.build_absolute_url(state.base_url, "/")
+
+    Logger.info("Starting to process root page: #{root_url}")
+
+    case Worker.process_page(root_url, state.run.id) do
       {:ok, page, links} ->
-        Logger.info("Successfully processed root page, found #{length(links)} links")
+        Logger.info("Processed root page, found #{length(links)} links: #{links}")
 
         # Update base URL if root page was redirected
         state =
@@ -81,33 +95,15 @@ defmodule Scraphex.Runs.Scheduler do
               Map.put(state, :base_url, Urls.base_url(final_url))
           end
 
-        # Final state
-        state =
-          state
-          |> update_state(["/"])
-          |> then(fn state ->
-            process_links(state, page, prepare_links(state, page, links))
-          end)
-
-        if state.stopped == false do
-          Logger.info(
-            "Done processing all links: total_processed=#{state.total_processed}, final_depth=#{state.depth}"
-          )
-
-          {:ok, run}
-        else
-          Logger.info("Stopping proccessing after reaching limits")
-          {:error, {run, :stopped}}
-        end
+        {:ok, update_state(state, ["/"]), {page, links}}
 
       {:error, reason} ->
-        Logger.info("Stopping crawl due to root page failure: #{reason}")
-        {:error, {run, reason}}
+        {:error, reason}
     end
   end
 
   defp process_links(state = %State{}, page = %Page{}, []) do
-    Logger.info("No more links to process: page_url=#{page.url}")
+    Logger.debug("No more links to process: page_url=#{page.url}")
     state
   end
 
@@ -129,7 +125,7 @@ defmodule Scraphex.Runs.Scheduler do
         Map.put(state, :stopped, true)
 
       true ->
-        # If we took a max amount of links, means we have to stop after processing
+        # If we took the max amount of links, means we have to stop after processing
         # It's a little hacky to do this here, but works well
         state =
           if length(links) == state.run.max_pages - state.total_processed do
@@ -143,6 +139,8 @@ defmodule Scraphex.Runs.Scheduler do
   end
 
   defp prepare_links(state = %State{}, page = %Page{}, links) do
+    Logger.debug("Preparing links: #{page.url} #{links}")
+
     # Normalize and deduplicate links
     normalized_links =
       links
@@ -159,7 +157,7 @@ defmodule Scraphex.Runs.Scheduler do
         nil
 
       visited_links ->
-        Logger.info("Found already visited links: #{page.url}, #{visited_links}")
+        Logger.debug("Found already visited links: #{page.url}, #{visited_links}")
 
         Worker.save_link_connections(
           page,

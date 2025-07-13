@@ -8,7 +8,7 @@ defmodule Scraphex.Http.Req do
                )
 
   def get(url, opts) do
-    req = Req.Request.merge_options(@base_client, opts)
+    req = Req.merge(@base_client, opts)
 
     case Req.get(req, url: url) do
       {:ok, response} ->
