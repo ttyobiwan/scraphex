@@ -8,7 +8,7 @@ defmodule Scraphex.Runs.Worker do
   Process a single page.
   """
   def process_page(url, run_id) do
-    Logger.info("Processing a page: #{url}")
+    Logger.info("Starting to process a url #{url} in run #{run_id}")
 
     url
     |> Scrapper.scrap()
@@ -35,13 +35,14 @@ defmodule Scraphex.Runs.Worker do
   Process multiple pages asynchronously.
   """
   def process_many_pages(urls, run_id) do
-    Logger.info("Starting to process multiple urls: #{urls}")
+    Logger.info("Starting to process multiple urls #{urls} in run #{run_id}")
 
     results =
       __MODULE__
       |> Task.Supervisor.async_stream(urls, fn url -> process_page(url, run_id) end)
       |> Enum.reduce([], fn
         {:ok, {:ok, page, links}}, acc ->
+          Logger.info("Processed page #{page.id}, found links #{links}")
           [{:ok, page, links} | acc]
 
         {:ok, {:error, reason}}, acc ->

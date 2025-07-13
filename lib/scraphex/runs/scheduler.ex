@@ -37,7 +37,7 @@ defmodule Scraphex.Runs.Scheduler do
         Runs.mark_run_as_finished!(run, :stopped)
 
       {:error, {run, reason}} ->
-        Logger.error("Processing run failed: #{reason}")
+        Logger.error("Processing run failed: #{inspect(reason)}")
         Runs.mark_run_as_finished!(run, :failed)
     end
 
@@ -63,6 +63,8 @@ defmodule Scraphex.Runs.Scheduler do
     case process_root_page(state) do
       {:ok, state, {page, links}} ->
         state = process_links(state, page, prepare_links(state, page, links))
+
+        Logger.info("Done processing run: #{run.id}")
 
         if state.stopped == true do
           {:error, {run, :stopped}}
